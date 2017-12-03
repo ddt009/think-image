@@ -18,21 +18,21 @@ class Image
 {
 
     /* 缩略图相关常量定义 */
-    const THUMB_SCALING   = 1; //常量，标识缩略图等比例缩放类型
-    const THUMB_FILLED    = 2; //常量，标识缩略图缩放后填充类型
-    const THUMB_CENTER    = 3; //常量，标识缩略图居中裁剪类型
+    const THUMB_SCALING = 1; //常量，标识缩略图等比例缩放类型
+    const THUMB_FILLED = 2; //常量，标识缩略图缩放后填充类型
+    const THUMB_CENTER = 3; //常量，标识缩略图居中裁剪类型
     const THUMB_NORTHWEST = 4; //常量，标识缩略图左上角裁剪类型
     const THUMB_SOUTHEAST = 5; //常量，标识缩略图右下角裁剪类型
-    const THUMB_FIXED     = 6; //常量，标识缩略图固定尺寸缩放类型
+    const THUMB_FIXED = 6; //常量，标识缩略图固定尺寸缩放类型
     /* 水印相关常量定义 */
     const WATER_NORTHWEST = 1; //常量，标识左上角水印
-    const WATER_NORTH     = 2; //常量，标识上居中水印
+    const WATER_NORTH = 2; //常量，标识上居中水印
     const WATER_NORTHEAST = 3; //常量，标识右上角水印
-    const WATER_WEST      = 4; //常量，标识左居中水印
-    const WATER_CENTER    = 5; //常量，标识居中水印
-    const WATER_EAST      = 6; //常量，标识右居中水印
+    const WATER_WEST = 4; //常量，标识左居中水印
+    const WATER_CENTER = 5; //常量，标识居中水印
+    const WATER_EAST = 6; //常量，标识右居中水印
     const WATER_SOUTHWEST = 7; //常量，标识左下角水印
-    const WATER_SOUTH     = 8; //常量，标识下居中水印
+    const WATER_SOUTH = 8; //常量，标识下居中水印
     const WATER_SOUTHEAST = 9; //常量，标识右下角水印
     /* 翻转相关常量定义 */
     const FLIP_X = 1; //X轴翻转
@@ -67,18 +67,18 @@ class Image
 
         //设置图像信息
         $this->info = [
-            'width'  => $info[0],
+            'width' => $info[0],
             'height' => $info[1],
-            'type'   => image_type_to_extension($info[2], false),
-            'mime'   => $info['mime'],
+            'type' => image_type_to_extension($info[2], false),
+            'mime' => $info['mime'],
         ];
 
         //打开图像
         if ('gif' == $this->info['type']) {
             $this->gif = new Gif($file->getPathname());
-            $this->im  = @imagecreatefromstring($this->gif->image());
+            $this->im = @imagecreatefromstring($this->gif->image());
         } else {
-            $fun      = "imagecreatefrom{$this->info['type']}";
+            $fun = "imagecreatefrom{$this->info['type']}";
             $this->im = @$fun($file->getPathname());
         }
 
@@ -106,10 +106,10 @@ class Image
 
     /**
      * 保存图像
-     * @param string      $pathname  图像保存路径名称
-     * @param null|string $type      图像类型
-     * @param int         $quality   图像质量
-     * @param bool        $interlace 是否对JPEG类型图像设置隔行扫描
+     * @param string $pathname 图像保存路径名称
+     * @param null|string $type 图像类型
+     * @param int $quality 图像质量
+     * @param bool $interlace 是否对JPEG类型图像设置隔行扫描
      * @return $this
      */
     public function save($pathname, $type = null, $quality = 80, $interlace = true)
@@ -131,7 +131,7 @@ class Image
             //设定保存完整的 alpha 通道信息
             imagesavealpha($this->im, true);
             //ImagePNG生成图像的质量范围从0到9的
-            imagepng($this->im, $pathname, min((int) ($quality / 10), 9));
+            imagepng($this->im, $pathname, min((int)($quality / 10), 9));
         } else {
             $fun = 'image' . $type;
             $fun($this->im, $pathname);
@@ -198,7 +198,7 @@ class Image
             $this->im = $img;
         } while (!empty($this->gif) && $this->gifNext());
 
-        $this->info['width']  = imagesx($this->im);
+        $this->info['width'] = imagesx($this->im);
         $this->info['height'] = imagesy($this->im);
 
         return $this;
@@ -245,25 +245,29 @@ class Image
     /**
      * 裁剪图像
      *
-     * @param  integer $w      裁剪区域宽度
-     * @param  integer $h      裁剪区域高度
-     * @param  integer $x      裁剪区域x坐标
-     * @param  integer $y      裁剪区域y坐标
-     * @param  integer $width  图像保存宽度
+     * @param  integer $w 裁剪区域宽度
+     * @param  integer $h 裁剪区域高度
+     * @param  integer $x 裁剪区域x坐标
+     * @param  integer $y 裁剪区域y坐标
+     * @param  integer $width 图像保存宽度
      * @param  integer $height 图像保存高度
+     * @param bool $bAlpha 支持透明与否
      *
      * @return $this
      */
-    public function crop($w, $h, $x = 0, $y = 0, $width = null, $height = null)
+    public function crop($w, $h, $x = 0, $y = 0, $width = null, $height = null, $bAlpha = false)
     {
         //设置保存尺寸
-        empty($width) && $width   = $w;
+        empty($width) && $width = $w;
         empty($height) && $height = $h;
         do {
             //创建新图像
             $img = imagecreatetruecolor($width, $height);
             // 调整默认颜色
-            $color = imagecolorallocate($img, 255, 255, 255);
+            if ($bAlpha)
+                $color = imagecolorallocatealpha($block, 0, 0, 0, 127);
+            else
+                $color = imagecolorallocate($img, 255, 255, 255);
             imagefill($img, 0, 0, $color);
             //裁剪
             imagecopyresampled($img, $this->im, 0, 0, $x, $y, $width, $height, $w, $h);
@@ -271,21 +275,22 @@ class Image
             //设置新图像
             $this->im = $img;
         } while (!empty($this->gif) && $this->gifNext());
-        $this->info['width']  = (int) $width;
-        $this->info['height'] = (int) $height;
+        $this->info['width'] = (int)$width;
+        $this->info['height'] = (int)$height;
         return $this;
     }
 
     /**
      * 生成缩略图
      *
-     * @param  integer $width  缩略图最大宽度
+     * @param  integer $width 缩略图最大宽度
      * @param  integer $height 缩略图最大高度
-     * @param int      $type   缩略图裁剪类型
+     * @param int $type 缩略图裁剪类型
+     * @param bool $bAlpha 支持透明与否
      *
      * @return $this
      */
-    public function thumb($width, $height, $type = self::THUMB_SCALING)
+    public function thumb($width, $height, $type = self::THUMB_SCALING, $bAlpha = false)
     {
         //原图宽度和高度
         $w = $this->info['width'];
@@ -301,8 +306,8 @@ class Image
                 //计算缩放比例
                 $scale = min($width / $w, $height / $h);
                 //设置缩略图的坐标及宽度和高度
-                $x      = $y      = 0;
-                $width  = $w * $scale;
+                $x = $y = 0;
+                $width = $w * $scale;
                 $height = $h * $scale;
                 break;
             /* 居中裁剪 */
@@ -345,23 +350,26 @@ class Image
                 //设置缩略图的坐标及宽度和高度
                 $neww = $w * $scale;
                 $newh = $h * $scale;
-                $x    = $this->info['width'] - $w;
-                $y    = $this->info['height'] - $h;
+                $x = $this->info['width'] - $w;
+                $y = $this->info['height'] - $h;
                 $posx = ($width - $w * $scale) / 2;
                 $posy = ($height - $h * $scale) / 2;
                 do {
                     //创建新图像
                     $img = imagecreatetruecolor($width, $height);
                     // 调整默认颜色
-                    $color = imagecolorallocate($img, 255, 255, 255);
+                    if ($bAlpha)
+                        $color = imagecolorallocatealpha($block, 0, 0, 0, 127);
+                    else
+                        $color = imagecolorallocate($img, 255, 255, 255);
                     imagefill($img, 0, 0, $color);
                     //裁剪
                     imagecopyresampled($img, $this->im, $posx, $posy, $x, $y, $neww, $newh, $w, $h);
                     imagedestroy($this->im); //销毁原图
                     $this->im = $img;
                 } while (!empty($this->gif) && $this->gifNext());
-                $this->info['width']  = (int) $width;
-                $this->info['height'] = (int) $height;
+                $this->info['width'] = (int)$width;
+                $this->info['height'] = (int)$height;
                 return $this;
             /* 固定 */
             case self::THUMB_FIXED:
@@ -371,15 +379,15 @@ class Image
                 throw new ImageException('不支持的缩略图裁剪类型');
         }
         /* 裁剪图像 */
-        return $this->crop($w, $h, $x, $y, $width, $height);
+        return $this->crop($w, $h, $x, $y, $width, $height, $bAlpha);
     }
 
     /**
      * 添加水印
      *
-     * @param string    $source 水印图片路径
+     * @param string $source 水印图片路径
      * @param int|array $locate 水印位置
-     * @param int       $alpha  透明度
+     * @param int $alpha 透明度
      * @return $this
      */
     public function water($source, $locate = self::WATER_SOUTHEAST, $alpha = 100)
@@ -393,7 +401,7 @@ class Image
             throw new ImageException('非法水印文件');
         }
         //创建水印图像资源
-        $fun   = 'imagecreatefrom' . image_type_to_extension($info[2], false);
+        $fun = 'imagecreatefrom' . image_type_to_extension($info[2], false);
         $water = $fun($source);
         //设定水印图像的混色模式
         imagealphablending($water, true);
@@ -471,19 +479,20 @@ class Image
     /**
      * 图像添加文字
      *
-     * @param string    $text   添加的文字
-     * @param string    $font   字体路径
-     * @param integer   $size   字号
-     * @param string    $color  文字颜色
+     * @param string $text 添加的文字
+     * @param string $font 字体路径
+     * @param integer $size 字号
+     * @param string $color 文字颜色
      * @param int|array $locate 文字写入位置
-     * @param integer   $offset 文字相对当前位置的偏移量
-     * @param integer   $angle  文字倾斜角度
+     * @param integer $offset 文字相对当前位置的偏移量
+     * @param integer $angle 文字倾斜角度
      *
      * @return $this
      * @throws ImageException
      */
     public function text($text, $font, $size, $color = '#00000000',
-        $locate = self::WATER_SOUTHEAST, $offset = 0, $angle = 0) {
+                         $locate = self::WATER_SOUTHEAST, $offset = 0, $angle = 0)
+    {
 
         if (!is_file($font)) {
             throw new ImageException("不存在的字体文件：{$font}");
@@ -553,11 +562,11 @@ class Image
         }
         /* 设置偏移量 */
         if (is_array($offset)) {
-            $offset        = array_map('intval', $offset);
+            $offset = array_map('intval', $offset);
             list($ox, $oy) = $offset;
         } else {
             $offset = intval($offset);
-            $ox     = $oy     = $offset;
+            $ox = $oy = $offset;
         }
         /* 图片黑白检测 */
         if ($color == "auto") {
